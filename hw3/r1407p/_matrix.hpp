@@ -5,19 +5,22 @@ using namespace std;
 
 class Matrix{
 private:
-    size_t row, col;
-    double *matrix;
+    size_t m_nrow, m_ncol;
+    double *m_buffer;
+    bool m_transpose;
 public:
     Matrix();
-    Matrix(size_t row, size_t col);
-    Matrix(size_t row, size_t col, double val);
-    Matrix(size_t row, size_t col,const vector<double> &v);
+    Matrix(size_t nrow, size_t ncol);
+    Matrix(size_t nrow, size_t ncol, double val);
+    Matrix(size_t nrow, size_t ncol,const vector<double> &v);
     Matrix(const Matrix &m);
-    size_t get_index(size_t i, size_t j);
-    size_t get_row();
-    size_t get_col();
+    size_t index(size_t i, size_t j) const;
+    size_t nrow();
+    size_t ncol();
     ~Matrix();
 
-    double operator()(size_t i, size_t j);
-    void operator()(size_t i, size_t j, double val);
+    double   operator() (size_t row, size_t col) const;
+    double & operator() (size_t row, size_t col);
+    bool is_transposed() const;
+    Matrix & transpose();
 };

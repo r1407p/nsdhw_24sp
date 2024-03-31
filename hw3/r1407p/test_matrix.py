@@ -1,12 +1,11 @@
-import pytest
 import _matrix
-import timeit
 
-def make_matrices( size):
+size = 1000
 
-        mat1 = _matrix.Matrix(size,size)
-        mat2 = _matrix.Matrix(size,size)
-        mat3 = _matrix.Matrix(size,size)
+mat1 = _matrix.Matrix(size,size)
+mat2 = _matrix.Matrix(size,size)
 
-make_matrices(100)
-
+for it in range(size):
+    for jt in range(size):
+        mat1[it, jt] = it * size + jt + 1
+        mat2[it, jt] = it * size + jt + 1

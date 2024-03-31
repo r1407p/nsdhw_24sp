@@ -5,69 +5,82 @@
 
 namespace py = pybind11;
 Matrix::Matrix(){
-    this->row = 0;
-    this->col = 0;
-    this->matrix = nullptr;
+    this->m_nrow = 0;
+    this->m_ncol = 0;
+    this->m_buffer = nullptr;
 }
 
-Matrix::Matrix(size_t row, size_t col){
-    this->row = row;
-    this->col = col;
-    this->matrix = new double[row * col];
-    for(size_t i = 0; i < row * col; i++){
-        this->matrix[i] = 0;
+Matrix::Matrix(size_t nrow, size_t ncol){
+    this->m_nrow = nrow;
+    this->m_ncol = ncol;
+    this->m_buffer = new double[nrow * ncol];
+    for(size_t i = 0; i < nrow * ncol; i++){
+        this->m_buffer[i] = 0;
     }
 }
 
 Matrix::Matrix(size_t row, size_t col, double val){
-    this->row = row;
-    this->col = col;
-    this->matrix = new double[row * col];
+    this->m_nrow = row;
+    this->m_ncol = col;
+    this->m_buffer = new double[row * col];
     for(size_t i = 0; i < row * col; i++){
-        this->matrix[i] = val;
+        this->m_buffer[i] = val;
     }
 }
 
 Matrix::Matrix(size_t row, size_t col,const std::vector<double> &v){
-    this->row = row;
-    this->col = col;
-    this->matrix = new double[row * col];
+    this->m_nrow = row;
+    this->m_ncol = col;
+    this->m_buffer = new double[row * col];
+    if(v.size() != row * col){
+        throw std::invalid_argument("size of vector does not match matrix size");
+    }
     for(size_t i = 0; i < row * col; i++){
-        if (i < v.size()){
-            this->matrix[i] = v[i];
-        }else{
-            this->matrix[i] = 0;
-        }
+        this->m_buffer[i] = v[i];
     }
 }
 Matrix::Matrix(const Matrix &m){
-    this->row = m.row;
-    this->col = m.col;
-    this->matrix = new double[row * col];
-    for(size_t i = 0; i < row * col; i++){
-        this->matrix[i] = m.matrix[i];
+    this->m_nrow = m.m_nrow;
+    this->m_ncol = m.m_ncol;
+    this->m_buffer = new double[m.m_nrow * m.m_ncol];
+    for(size_t i = 0; i < m.m_nrow * m.m_ncol; i++){
+        this->m_buffer[i] = m.m_buffer[i];
     }
 } 
-size_t Matrix::get_index(size_t i, size_t j){
-    return i * this->col + j;
+size_t Matrix::index(size_t i, size_t j) const{
+    return i * this->m_ncol + j;
 }
-size_t Matrix::get_row(){
-    return this->row;
+size_t Matrix::nrow(){
+    return this->m_nrow;
 }
-size_t Matrix::get_col(){
-    return this->col;
+size_t Matrix::ncol(){
+    return this->m_ncol;
 }
 Matrix::~Matrix(){
-    delete[] this->matrix;
+    delete[] this->m_buffer;
 }
 
-double Matrix::operator()(size_t i, size_t j){
-    return this->matrix[get_index(i, j)];
+double Matrix::operator() (size_t row, size_t col) const{
+    if (row < 0 || row >= m_nrow || col < 0 || col > m_ncol){
+        throw std::out_of_range("index out of range");
+    }
+    return m_buffer[index(row, col)];
 }
-void Matrix::operator()(size_t i, size_t j, double val){
-    this->matrix[get_index(i, j)] = val;
+double &Matrix::operator() (size_t row, size_t col){
+    if (row < 0 || row >= m_nrow || col < 0 || col > m_ncol){
+        throw std::out_of_range("index out of range");
+    }
+    return m_buffer[index(row, col)];
 }
 
+bool Matrix::is_transposed() const{
+    return m_transpose;
+}
+Matrix & Matrix::transpose(){
+    m_transpose = !m_transpose;
+    std::swap(m_nrow, m_ncol);
+    return *this;
+}
 PYBIND11_MODULE(_matrix, m) {
     m.doc() = "pybind11 matrix plugin"; // optional module docstring
     py::class_<Matrix>(m, "Matrix")
@@ -75,6 +88,13 @@ PYBIND11_MODULE(_matrix, m) {
         .def(py::init<size_t, size_t>())
         .def(py::init<size_t, size_t, double>())
         .def(py::init<size_t, size_t, const std::vector<double> &>())
-        .def(py::init<const Matrix &>());
+        .def(py::init<const Matrix &>())
+        .def("__getitem__", [](const Matrix &m, std::vector<std::size_t> idx){ 
+            return m(idx[0], idx[1]); 
+        })
+        .def("__setitem__", [](Matrix &m, std::vector<std::size_t> idx, double val){
+             m(idx[0], idx[1]) = val; 
+        });
+      
         
 }
