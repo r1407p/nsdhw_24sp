@@ -17,10 +17,7 @@ public:
     size_t index(size_t i, size_t j) const;
     size_t nrow() const;
     size_t ncol() const;
-    const double* get_buffer() const {
-        return m_buffer;
-    }
-    ~Matrix();
+    const double* get_buffer() const;
 
     double   operator() (size_t row, size_t col) const;
     double & operator() (size_t row, size_t col);

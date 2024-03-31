@@ -51,12 +51,16 @@ Matrix::Matrix(const Matrix &m){
 size_t Matrix::index(size_t i, size_t j) const{
     return i * this->m_ncol + j;
 }
-size_t Matrix::nrow(){
+size_t Matrix::nrow() const{
     return this->m_nrow;
 }
-size_t Matrix::ncol(){
+size_t Matrix::ncol() const{
     return this->m_ncol;
 }
+const double* Matrix::get_buffer() const {
+    return m_buffer;
+}
+    
 Matrix::~Matrix(){
     delete[] this->m_buffer;
 }
@@ -125,8 +129,8 @@ Matrix multiply_mkl(Matrix const &m1, Matrix const &m2){
     Matrix result(m1.nrow(), m2.ncol());
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
                 m1.nrow(), m2.ncol(), m1.ncol(),
-                1.0, m1.get_buffer(), m1.ncol(),
-                m2.get_buffer(), m2.ncol(),
+                1.0, const_cast<double*>(m1.get_buffer()), m1.ncol(),
+                const_cast<double*>(m2.get_buffer()), m2.ncol(),
                 0.0, result.get_buffer(), m2.ncol());
 
     return result;
