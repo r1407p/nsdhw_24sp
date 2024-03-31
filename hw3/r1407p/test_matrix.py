@@ -2,6 +2,7 @@ import _matrix
 import pytest
 import timeit
 import random
+import sys
 
 def test_constructer():
     
@@ -34,7 +35,18 @@ def test_multiply_correctness():
     for i in range(size1):
         for j in range(size3):
             assert ret_matrix1[i, j] == ret_matrix2[i, j] == ret_matrix3[i, j]
-    
+class Writer:
+
+    def __init__(self, streams):
+
+        self.streams = streams
+
+    def write(self, msg):
+
+        for stream in self.streams:
+
+            stream.write(msg)
+            
 def test_performance():
     setup = '''
 import _matrix
