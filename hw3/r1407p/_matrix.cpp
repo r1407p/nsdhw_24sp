@@ -57,12 +57,15 @@ size_t Matrix::nrow() const{
 size_t Matrix::ncol() const{
     return this->m_ncol;
 }
-const double* Matrix::get_buffer() const {
+const double* Matrix::get_buffer_const() const {
+    return m_buffer;
+}
+double* Matrix::get_buffer(){
     return m_buffer;
 }
     
-Matrix::~Matrix(){
-    delete[] this->m_buffer;
+Matrix::~Matrix() {
+    delete[] m_buffer;
 }
 
 double Matrix::operator() (size_t row, size_t col) const{
@@ -129,8 +132,8 @@ Matrix multiply_mkl(Matrix const &m1, Matrix const &m2){
     Matrix result(m1.nrow(), m2.ncol());
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
                 m1.nrow(), m2.ncol(), m1.ncol(),
-                1.0, const_cast<double*>(m1.get_buffer()), m1.ncol(),
-                const_cast<double*>(m2.get_buffer()), m2.ncol(),
+                1.0, const_cast<double*>(m1.get_buffer_const()), m1.ncol(),
+                const_cast<double*>(m2.get_buffer_const()), m2.ncol(),
                 0.0, result.get_buffer(), m2.ncol());
 
     return result;

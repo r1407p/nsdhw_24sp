@@ -17,7 +17,8 @@ public:
     size_t index(size_t i, size_t j) const;
     size_t nrow() const;
     size_t ncol() const;
-    const double* get_buffer() const;
+    const double* get_buffer_const() const;
+    double* get_buffer();
 
     double   operator() (size_t row, size_t col) const;
     double & operator() (size_t row, size_t col);
