@@ -1,5 +1,6 @@
 #include "_matrix.hpp"
 #include <stdexcept>
+#include <mkl.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -81,6 +82,55 @@ Matrix & Matrix::transpose(){
     std::swap(m_nrow, m_ncol);
     return *this;
 }
+Matrix multiply_naive(Matrix const &m1, Matrix const &m2){
+    if(m1.ncol() != m2.nrow()){
+        throw std::invalid_argument("matrix size does not match");
+    }
+    Matrix result(m1.nrow(), m2.ncol());
+    for(size_t i = 0; i < m1.nrow(); i++){
+        for(size_t j = 0; j < m2.ncol(); j++){
+            for(size_t k = 0; k < m1.ncol(); k++){
+                result(i, j) += m1(i, k) * m2(k, j);
+            }
+        }
+    }
+    return result;
+}
+
+Matrix multiply_tile(Matrix const &m1, Matrix const &m2, std::size_t size){
+    if(m1.ncol() != m2.nrow()){
+        throw std::invalid_argument("matrix size does not match");
+    }
+    Matrix result(m1.nrow(), m2.ncol());
+    for(size_t i = 0; i < m1.nrow(); i += size){
+        for(size_t j = 0; j < m2.ncol(); j += size){
+            for(size_t k = 0; k < m1.ncol(); k += size){
+                for(size_t ii = i; ii < std::min(i + size, m1.nrow()); ii++){
+                    for(size_t jj = j; jj < std::min(j + size, m2.ncol()); jj++){
+                        for(size_t kk = k; kk < std::min(k + size, m1.ncol()); kk++){
+                            result(ii, jj) += m1(ii, kk) * m2(kk, jj);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return result;
+
+}
+Matrix multiply_mkl(Matrix const &m1, Matrix const &m2){
+    if(m1.ncol() != m2.nrow()){
+        throw std::invalid_argument("matrix size does not match");
+    }
+    Matrix result(m1.nrow(), m2.ncol());
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                m1.nrow(), m2.ncol(), m1.ncol(),
+                1.0, m1.m_buffer, m1.ncol(),
+                m2.m_buffer, m2.ncol(),
+                0.0, result.m_buffer, m2.ncol());
+
+    return result;
+}
 PYBIND11_MODULE(_matrix, m) {
     m.doc() = "pybind11 matrix plugin"; // optional module docstring
     py::class_<Matrix>(m, "Matrix")
@@ -95,6 +145,7 @@ PYBIND11_MODULE(_matrix, m) {
         .def("__setitem__", [](Matrix &m, std::vector<std::size_t> idx, double val){
              m(idx[0], idx[1]) = val; 
         });
-      
-        
+    m.def("multiply_naive", &multiply_naive, "");
+    m.def("multiply_tile", &multiply_tile, "");
+    m.def("multiply_mkl", &multiply_mkl, "");
 }
