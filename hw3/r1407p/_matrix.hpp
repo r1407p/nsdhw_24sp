@@ -15,8 +15,11 @@ public:
     Matrix(size_t nrow, size_t ncol,const vector<double> &v);
     Matrix(const Matrix &m);
     size_t index(size_t i, size_t j) const;
-    size_t nrow();
-    size_t ncol();
+    size_t nrow() const;
+    size_t ncol() const;
+    const double* get_buffer() const {
+        return m_buffer;
+    }
     ~Matrix();
 
     double   operator() (size_t row, size_t col) const;

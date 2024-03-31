@@ -125,9 +125,9 @@ Matrix multiply_mkl(Matrix const &m1, Matrix const &m2){
     Matrix result(m1.nrow(), m2.ncol());
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
                 m1.nrow(), m2.ncol(), m1.ncol(),
-                1.0, m1.m_buffer, m1.ncol(),
-                m2.m_buffer, m2.ncol(),
-                0.0, result.m_buffer, m2.ncol());
+                1.0, m1.get_buffer(), m1.ncol(),
+                m2.get_buffer(), m2.ncol(),
+                0.0, result.get_buffer(), m2.ncol());
 
     return result;
 }
