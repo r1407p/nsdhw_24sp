@@ -14,6 +14,7 @@ public:
     Matrix(size_t nrow, size_t ncol, double val);
     Matrix(size_t nrow, size_t ncol,const vector<double> &v);
     Matrix(const Matrix &m);
+    ~Matrix();
     size_t index(size_t i, size_t j) const;
     size_t nrow() const;
     size_t ncol() const;
